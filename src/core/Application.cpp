@@ -1,4 +1,5 @@
 #include "echo/Application.h"
+#include "echo/AssetManager.h"
 
 #include "raylib.h"
 #include "imgui.h"
@@ -26,10 +27,23 @@ void Application::Init()
 
     // Inicializar rlImGui (configura Dear ImGui + backend Raylib)
     rlImGuiSetup(true); // true = dark theme
+
+    // Inicializar audio (necesario para reproducir sonidos en el editor)
+    InitAudioDevice();
+
+    // Inicializar AssetManager y escanear assets existentes
+    AssetManager::Instance().SetAssetsRoot("assets");
+    AssetManager::Instance().ScanAndLoadAll();
+
+    // Crear paneles del editor
+    m_AssetPanel = std::make_unique<AssetPanel>();
 }
 
 void Application::Shutdown()
 {
+    m_AssetPanel.reset();
+    AssetManager::Instance().UnloadAll();
+    CloseAudioDevice();
     rlImGuiShutdown();
     CloseWindow();
 }
@@ -81,7 +95,10 @@ void Application::RenderGUI()
             ImGui::EndMenu();
         }
         if (ImGui::BeginMenu("Ver")) {
-            ImGui::MenuItem("Assets");
+            bool assetsVisible = m_AssetPanel->IsVisible();
+            if (ImGui::MenuItem("Assets", nullptr, &assetsVisible)) {
+                m_AssetPanel->SetVisible(assetsVisible);
+            }
             ImGui::MenuItem("Escena");
             ImGui::MenuItem("Propiedades");
             ImGui::EndMenu();
@@ -89,19 +106,41 @@ void Application::RenderGUI()
         ImGui::EndMainMenuBar();
     }
 
-    // --- Ventana principal de bienvenida ---
-    ImGui::SetNextWindowSize(ImVec2(500, 200), ImGuiCond_FirstUseEver);
+    // --- Panel de Assets ---
+    m_AssetPanel->Render();
+
+    // --- Popup de ayuda para importar (mostrado desde AssetPanel) ---
+    if (ImGui::BeginPopupModal("ImportHelp", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Text("Para importar assets:");
+        ImGui::BulletText("Copia tus archivos de imagen (.png, .jpg, .bmp)");
+        ImGui::BulletText("o audio (.wav, .ogg, .mp3)");
+        ImGui::BulletText("dentro de la carpeta 'assets/' del proyecto.");
+        ImGui::Spacing();
+        ImGui::Text("Subcarpetas soportadas:");
+        ImGui::BulletText("assets/sprites/  - para sprites y personajes");
+        ImGui::BulletText("assets/tilesets/ - para tilesets de mapas");
+        ImGui::BulletText("assets/audio/   - para efectos y musica");
+        ImGui::Spacing();
+        ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.4f, 1.0f),
+                           "Luego pulsa 'Refrescar' en el panel de Assets.");
+        ImGui::Spacing();
+        if (ImGui::Button("Entendido", ImVec2(120, 0))) {
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+    }
+
+    // --- Ventana de info del motor ---
+    ImGui::SetNextWindowSize(ImVec2(400, 150), ImGuiCond_FirstUseEver);
     ImGui::Begin("Echo Engine");
 
     ImGui::TextColored(ImVec4(0.4f, 0.8f, 1.0f, 1.0f), "Motor 2D Iniciado");
     ImGui::Separator();
-    ImGui::Text("Bienvenido a Echo Engine v0.1.0");
-    ImGui::Text("Motor de videojuegos 2D visual - No-Code");
-    ImGui::Spacing();
-    ImGui::TextWrapped(
-        "Este es el punto de partida del editor. Los paneles de Assets, "
-        "Escena, Tilemap y Propiedades se iran integrando modulo a modulo."
-    );
+
+    auto& mgr = AssetManager::Instance();
+    ImGui::Text("Texturas cargadas: %d", (int)mgr.GetAllTextures().size());
+    ImGui::Text("Sonidos cargados:  %d", (int)mgr.GetAllSounds().size());
+    ImGui::Text("Tilesets:          %d", (int)mgr.GetAllTilesets().size());
 
     ImGui::End();
 }

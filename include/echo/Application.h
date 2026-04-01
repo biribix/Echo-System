@@ -1,5 +1,8 @@
 #pragma once
 
+#include "echo/AssetPanel.h"
+#include <memory>
+
 namespace Echo {
 
 class Application {
@@ -25,6 +28,9 @@ private:
     int m_Height;
     const char* m_Title;
     bool m_Running = true;
+
+    // Paneles del editor
+    std::unique_ptr<AssetPanel> m_AssetPanel;
 };
 
 } // namespace Echo
