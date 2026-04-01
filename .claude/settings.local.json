@@ -5,7 +5,25 @@
       "Bash(cmake --version)",
       "Bash(git --version)",
       "Bash(where cl.exe)",
-      "Bash(where g++.exe)"
+      "Bash(where g++.exe)",
+      "Bash(where cmake:*)",
+      "Bash(where g++)",
+      "Bash(where make:*)",
+      "Bash(where mingw32-make:*)",
+      "Read(//c/Program Files/CMake/bin/**)",
+      "Read(//c/Program Files \\(x86\\)/CMake/bin/**)",
+      "Read(//c/Users/**)",
+      "Bash(export PATH=\"/c/Program Files/CMake/bin:$PATH\")",
+      "Bash(where git:*)",
+      "Read(//c/Program Files/Git/bin/**)",
+      "Bash(cmake -B build -S . -G \"MinGW Makefiles\" -DCMAKE_BUILD_TYPE=Debug)",
+      "Bash(rm -rf build)",
+      "Bash(cmake -B build -S . -G \"MinGW Makefiles\" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_POLICY_VERSION_MINIMUM=3.5)",
+      "Bash(cmake --build build -j4)",
+      "Bash(export:*)",
+      "Read(//c/msys64/mingw64/bin/**)",
+      "Read(//c/msys64/ucrt64/bin/**)",
+      "Read(//c/Program Files/Microsoft Visual Studio/**)"
     ]
   }
 }
