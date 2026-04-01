@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(cmake --version)",
+      "Bash(git --version)",
+      "Bash(where cl.exe)",
+      "Bash(where g++.exe)"
     ]
   }
 }
