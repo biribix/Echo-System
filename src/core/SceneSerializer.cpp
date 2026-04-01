@@ -102,6 +102,32 @@ static json SerializeCamera(const CameraComponent& cam)
     };
 }
 
+static json SerializeTilemap(const TilemapComponent& tm)
+{
+    json layersJson = json::array();
+    for (const auto& layer : tm.layers) {
+        layersJson.push_back({
+            {"name", layer.name},
+            {"visible", layer.visible},
+            {"data", layer.data}
+        });
+    }
+
+    // Convertir vector<bool> a vector<int> para JSON
+    std::vector<int> colData(tm.collisionData.size());
+    for (size_t i = 0; i < tm.collisionData.size(); i++)
+        colData[i] = tm.collisionData[i] ? 1 : 0;
+
+    return {
+        {"tilesetPath", tm.tilesetPath},
+        {"tileSize", tm.tileSize},
+        {"mapWidth", tm.mapWidth},
+        {"mapHeight", tm.mapHeight},
+        {"layers", layersJson},
+        {"collisionData", colData}
+    };
+}
+
 // =============================================================================
 // Save
 // =============================================================================
@@ -150,6 +176,11 @@ bool SceneSerializer::Save(const std::string& filepath) const
         // Camera
         if (reg.all_of<CameraComponent>(entity)) {
             entityJson["camera"] = SerializeCamera(reg.get<CameraComponent>(entity));
+        }
+
+        // Tilemap
+        if (reg.all_of<TilemapComponent>(entity)) {
+            entityJson["tilemap"] = SerializeTilemap(reg.get<TilemapComponent>(entity));
         }
 
         root["entities"].push_back(entityJson);
@@ -309,6 +340,44 @@ bool SceneSerializer::Load(const std::string& filepath)
             auto& c = entityJson["camera"];
             cam.primary = c.value("primary", true);
             cam.zoom = c.value("zoom", 1.0f);
+        }
+
+        // Tilemap
+        if (entityJson.contains("tilemap")) {
+            auto& tm = entity.Add<TilemapComponent>();
+            auto& t = entityJson["tilemap"];
+            tm.tilesetPath = t.value("tilesetPath", "");
+            tm.tileSize = t.value("tileSize", 32);
+            tm.mapWidth = t.value("mapWidth", 30);
+            tm.mapHeight = t.value("mapHeight", 20);
+
+            int total = tm.mapWidth * tm.mapHeight;
+            tm.layers.clear();
+
+            if (t.contains("layers")) {
+                for (const auto& layerJson : t["layers"]) {
+                    TilemapLayer layer;
+                    layer.name = layerJson.value("name", "Capa");
+                    layer.visible = layerJson.value("visible", true);
+                    if (layerJson.contains("data") && layerJson["data"].is_array()) {
+                        layer.data = layerJson["data"].get<std::vector<int>>();
+                        layer.data.resize(total, -1);
+                    } else {
+                        layer.data.assign(total, -1);
+                    }
+                    tm.layers.push_back(std::move(layer));
+                }
+            }
+            if (tm.layers.empty()) {
+                tm.Initialize();
+            }
+
+            tm.collisionData.assign(total, false);
+            if (t.contains("collisionData") && t["collisionData"].is_array()) {
+                auto colVec = t["collisionData"].get<std::vector<int>>();
+                for (size_t i = 0; i < colVec.size() && i < (size_t)total; i++)
+                    tm.collisionData[i] = (colVec[i] != 0);
+            }
         }
     }
 

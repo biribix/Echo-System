@@ -91,6 +91,7 @@ template AnimationComponent& Entity::Add<AnimationComponent>();
 template ColliderComponent& Entity::Add<ColliderComponent>();
 template RigidBodyComponent& Entity::Add<RigidBodyComponent>();
 template CameraComponent& Entity::Add<CameraComponent>();
+template TilemapComponent& Entity::Add<TilemapComponent>();
 
 template TagComponent& Entity::Get<TagComponent>();
 template TransformComponent& Entity::Get<TransformComponent>();
@@ -99,6 +100,7 @@ template AnimationComponent& Entity::Get<AnimationComponent>();
 template ColliderComponent& Entity::Get<ColliderComponent>();
 template RigidBodyComponent& Entity::Get<RigidBodyComponent>();
 template CameraComponent& Entity::Get<CameraComponent>();
+template TilemapComponent& Entity::Get<TilemapComponent>();
 
 template const TagComponent& Entity::Get<TagComponent>() const;
 template const TransformComponent& Entity::Get<TransformComponent>() const;
@@ -107,6 +109,7 @@ template const AnimationComponent& Entity::Get<AnimationComponent>() const;
 template const ColliderComponent& Entity::Get<ColliderComponent>() const;
 template const RigidBodyComponent& Entity::Get<RigidBodyComponent>() const;
 template const CameraComponent& Entity::Get<CameraComponent>() const;
+template const TilemapComponent& Entity::Get<TilemapComponent>() const;
 
 template bool Entity::Has<TagComponent>() const;
 template bool Entity::Has<TransformComponent>() const;
@@ -115,6 +118,7 @@ template bool Entity::Has<AnimationComponent>() const;
 template bool Entity::Has<ColliderComponent>() const;
 template bool Entity::Has<RigidBodyComponent>() const;
 template bool Entity::Has<CameraComponent>() const;
+template bool Entity::Has<TilemapComponent>() const;
 
 template void Entity::Remove<TagComponent>();
 template void Entity::Remove<TransformComponent>();
@@ -123,5 +127,6 @@ template void Entity::Remove<AnimationComponent>();
 template void Entity::Remove<ColliderComponent>();
 template void Entity::Remove<RigidBodyComponent>();
 template void Entity::Remove<CameraComponent>();
+template void Entity::Remove<TilemapComponent>();
 
 } // namespace Echo

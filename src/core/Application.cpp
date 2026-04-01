@@ -45,6 +45,9 @@ void Application::Init()
 
     m_PropertiesPanel = std::make_unique<PropertiesPanel>();
     m_PropertiesPanel->SetScene(m_ActiveScene);
+
+    m_TilemapEditor = std::make_unique<TilemapEditor>();
+    m_TilemapEditor->SetScene(m_ActiveScene);
 }
 
 void Application::Shutdown()
@@ -52,6 +55,7 @@ void Application::Shutdown()
     m_AssetPanel.reset();
     m_SceneHierarchyPanel.reset();
     m_PropertiesPanel.reset();
+    m_TilemapEditor.reset();
     m_ActiveScene.reset();
     AssetManager::Instance().UnloadAll();
     CloseAudioDevice();
@@ -82,6 +86,9 @@ void Application::Render()
     BeginDrawing();
     ClearBackground(DARKGRAY);
 
+    // Renderizar tilemap en el viewport (antes de ImGui para que quede detrás)
+    m_TilemapEditor->RenderViewport();
+
     rlImGuiBegin();
     RenderGUI();
     rlImGuiEnd();
@@ -99,6 +106,8 @@ void Application::NewScene()
     m_SceneHierarchyPanel->SetScene(m_ActiveScene);
     m_SceneHierarchyPanel->ClearSelection();
     m_PropertiesPanel->SetScene(m_ActiveScene);
+    m_TilemapEditor->SetScene(m_ActiveScene);
+    m_TilemapEditor->SetTargetEntity(entt::null);
     m_CurrentScenePath.clear();
 }
 
@@ -121,6 +130,8 @@ void Application::LoadScene()
         m_SceneHierarchyPanel->SetScene(m_ActiveScene);
         m_SceneHierarchyPanel->ClearSelection();
         m_PropertiesPanel->SetScene(m_ActiveScene);
+        m_TilemapEditor->SetScene(m_ActiveScene);
+        m_TilemapEditor->SetTargetEntity(entt::null);
         m_CurrentScenePath = path;
     }
 }
@@ -159,6 +170,10 @@ void Application::RenderGUI()
             if (ImGui::MenuItem("Propiedades", nullptr, &propsVis))
                 m_PropertiesPanel->SetVisible(propsVis);
 
+            bool tilemapVis = m_TilemapEditor->IsVisible();
+            if (ImGui::MenuItem("Tilemap Editor", nullptr, &tilemapVis))
+                m_TilemapEditor->SetVisible(tilemapVis);
+
             ImGui::EndMenu();
         }
         ImGui::EndMainMenuBar();
@@ -168,6 +183,14 @@ void Application::RenderGUI()
     m_AssetPanel->Render();
     m_SceneHierarchyPanel->Render();
     m_PropertiesPanel->Render(m_SceneHierarchyPanel->GetSelectedEntity());
+
+    // Sincronizar: si la entidad seleccionada tiene TilemapComponent, apuntar el editor
+    entt::entity selected = m_SceneHierarchyPanel->GetSelectedEntity();
+    if (selected != entt::null && m_ActiveScene->GetRegistry().valid(selected)
+        && m_ActiveScene->GetRegistry().all_of<TilemapComponent>(selected)) {
+        m_TilemapEditor->SetTargetEntity(selected);
+    }
+    m_TilemapEditor->RenderPanel();
 
     // --- Popup de ayuda para importar ---
     if (ImGui::BeginPopupModal("ImportHelp", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {

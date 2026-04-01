@@ -61,6 +61,7 @@ void PropertiesPanel::Render(entt::entity selectedEntity)
         RenderColliderComponent(selectedEntity);
         RenderRigidBodyComponent(selectedEntity);
         RenderCameraComponent(selectedEntity);
+        RenderTilemapComponent(selectedEntity);
 
         ImGui::Spacing();
         ImGui::Separator();
@@ -358,6 +359,35 @@ void PropertiesPanel::RenderCameraComponent(entt::entity entity)
 }
 
 // =============================================================================
+// Tilemap
+// =============================================================================
+
+void PropertiesPanel::RenderTilemapComponent(entt::entity entity)
+{
+    auto& reg = m_Scene->GetRegistry();
+    if (!reg.all_of<TilemapComponent>(entity)) return;
+
+    if (RenderComponentHeader("Tilemap")) {
+        auto& tm = reg.get<TilemapComponent>(entity);
+
+        ImGui::Text("Mapa: %d x %d tiles", tm.mapWidth, tm.mapHeight);
+        ImGui::Text("Tile Size: %d px", tm.tileSize);
+        ImGui::Text("Capas: %d", (int)tm.layers.size());
+        ImGui::Text("Tileset: %s", tm.tilesetPath.empty() ? "(ninguno)" : tm.tilesetPath.c_str());
+
+        ImGui::Spacing();
+        ImGui::TextColored(ImVec4(0.4f, 0.8f, 1.0f, 1.0f),
+                           "Edita en el panel 'Tilemap Editor'");
+
+        if (m_RequestRemove) {
+            reg.remove<TilemapComponent>(entity);
+        }
+
+        ImGui::TreePop();
+    }
+}
+
+// =============================================================================
 // Menú "Agregar Componente"
 // =============================================================================
 
@@ -399,6 +429,13 @@ void PropertiesPanel::RenderAddComponentMenu(entt::entity entity)
         if (!reg.all_of<CameraComponent>(entity)) {
             if (ImGui::MenuItem("Camara")) {
                 reg.emplace<CameraComponent>(entity);
+                ImGui::CloseCurrentPopup();
+            }
+        }
+        if (!reg.all_of<TilemapComponent>(entity)) {
+            if (ImGui::MenuItem("Tilemap")) {
+                auto& tm = reg.emplace<TilemapComponent>(entity);
+                tm.Initialize();
                 ImGui::CloseCurrentPopup();
             }
         }

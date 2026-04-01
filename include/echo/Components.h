@@ -100,4 +100,68 @@ struct CameraComponent {
     float zoom = 1.0f;
 };
 
+// =============================================================================
+// TilemapComponent — Mapa de tiles con múltiples capas
+// =============================================================================
+
+/// Una capa del tilemap. Cada celda almacena el índice del tile (-1 = vacío).
+struct TilemapLayer {
+    std::string name = "Capa";
+    std::vector<int> data;      // tamaño = mapWidth * mapHeight
+    bool visible = true;
+};
+
+struct TilemapComponent {
+    std::string tilesetPath;        // path al tileset en AssetManager
+    int tileSize = 32;              // tamaño de cada tile en píxeles
+    int mapWidth = 30;              // ancho del mapa en tiles
+    int mapHeight = 20;             // alto del mapa en tiles
+
+    std::vector<TilemapLayer> layers;
+    std::vector<bool> collisionData; // tamaño = mapWidth * mapHeight
+
+    /// Inicializa capas y datos con el tamaño dado
+    void Initialize()
+    {
+        int total = mapWidth * mapHeight;
+        collisionData.assign(total, false);
+        if (layers.empty()) {
+            TilemapLayer bg;
+            bg.name = "Fondo";
+            bg.data.assign(total, -1);
+            layers.push_back(bg);
+        } else {
+            for (auto& layer : layers)
+                layer.data.resize(total, -1);
+        }
+    }
+
+    /// Acceso seguro a un tile de una capa
+    int GetTile(int layerIdx, int x, int y) const
+    {
+        if (layerIdx < 0 || layerIdx >= (int)layers.size()) return -1;
+        if (x < 0 || x >= mapWidth || y < 0 || y >= mapHeight) return -1;
+        return layers[layerIdx].data[y * mapWidth + x];
+    }
+
+    void SetTile(int layerIdx, int x, int y, int tileIndex)
+    {
+        if (layerIdx < 0 || layerIdx >= (int)layers.size()) return;
+        if (x < 0 || x >= mapWidth || y < 0 || y >= mapHeight) return;
+        layers[layerIdx].data[y * mapWidth + x] = tileIndex;
+    }
+
+    bool GetCollision(int x, int y) const
+    {
+        if (x < 0 || x >= mapWidth || y < 0 || y >= mapHeight) return false;
+        return collisionData[y * mapWidth + x];
+    }
+
+    void SetCollision(int x, int y, bool solid)
+    {
+        if (x < 0 || x >= mapWidth || y < 0 || y >= mapHeight) return;
+        collisionData[y * mapWidth + x] = solid;
+    }
+};
+
 } // namespace Echo

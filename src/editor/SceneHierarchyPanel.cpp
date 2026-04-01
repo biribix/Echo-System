@@ -183,6 +183,14 @@ void SceneHierarchyPanel::RenderContextMenu()
             ent.Add<CameraComponent>();
             m_SelectedEntity = e.GetHandle();
         }
+        ImGui::Separator();
+        if (ImGui::MenuItem("Tilemap")) {
+            auto e = m_Scene->CreateEntity("Tilemap");
+            Entity ent(e.GetHandle(), m_Scene.get());
+            auto& tm = ent.Add<TilemapComponent>();
+            tm.Initialize();
+            m_SelectedEntity = e.GetHandle();
+        }
         ImGui::EndMenu();
     }
 }

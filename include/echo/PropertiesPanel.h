@@ -30,6 +30,7 @@ private:
     void RenderColliderComponent(entt::entity entity);
     void RenderRigidBodyComponent(entt::entity entity);
     void RenderCameraComponent(entt::entity entity);
+    void RenderTilemapComponent(entt::entity entity);
     void RenderAddComponentMenu(entt::entity entity);
 
     /// Helper para renderizar un header de componente con botón de eliminar

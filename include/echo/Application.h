@@ -3,6 +3,7 @@
 #include "echo/AssetPanel.h"
 #include "echo/SceneHierarchyPanel.h"
 #include "echo/PropertiesPanel.h"
+#include "echo/TilemapEditor.h"
 #include <memory>
 
 namespace Echo {
@@ -46,6 +47,7 @@ private:
     std::unique_ptr<AssetPanel> m_AssetPanel;
     std::unique_ptr<SceneHierarchyPanel> m_SceneHierarchyPanel;
     std::unique_ptr<PropertiesPanel> m_PropertiesPanel;
+    std::unique_ptr<TilemapEditor> m_TilemapEditor;
 };
 
 } // namespace Echo
